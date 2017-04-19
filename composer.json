@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "McMatters\\SingleRole": "src/"
+            "McMatters\\SingleRole\\": "src/"
         }
     }
 }
