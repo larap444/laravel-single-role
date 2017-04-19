@@ -1,0 +1,20 @@
+{
+    "name": "mcmatters/laravel-single-role",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Borzyonok",
+            "email": "dima.matters@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "illuminate/database": "5.*",
+        "illuminate/http": "5.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "McMatters\\SingleRole": "src/"
+        }
+    }
+}
