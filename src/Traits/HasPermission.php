@@ -37,23 +37,9 @@ trait HasPermission
      */
     public function hasPermission(string $permission): bool
     {
-        $currentPermissions = null;
+        $permissions = $this->getPermissions();
 
-        if ($this instanceof Role) {
-            $currentPermissions = $this->getAttribute('permissions');
-        } else {
-            /** @var null|Role $role */
-            $role = $this->getAttribute('role');
-            $currentPermissions = $this->getAttribute('permissions');
-
-            if (null !== $role) {
-                $currentPermissions = $currentPermissions->merge(
-                    $role->getAttribute('permissions')
-                );
-            }
-        }
-
-        return (bool) $currentPermissions->first(function ($item) use ($permission) {
+        return (bool) $permissions->first(function ($item) use ($permission) {
             return is_numeric($permission)
                 ? $item->getKey() === (int) $permission
                 : $item->getAttribute('name') === $permission;
@@ -85,6 +71,39 @@ trait HasPermission
         }
 
         return $all;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getPermissions(): Collection
+    {
+        static $permissions = [];
+
+        $class = get_class($this);
+        $key = $this->getKey();
+
+        if (isset($permissions[$class][$key])) {
+            return $permissions[$class][$key];
+        }
+
+        if ($this instanceof Role) {
+            $modelPermissions = $this->getAttribute('permissions');
+        } else {
+            /** @var null|Role $role */
+            $role = $this->getAttribute('role');
+            $modelPermissions = $this->getAttribute('permissions');
+
+            if (null !== $role) {
+                $modelPermissions = $modelPermissions->merge(
+                    $role->getAttribute('permissions')
+                );
+            }
+        }
+
+        $permissions[$class][$key] = $modelPermissions;
+
+        return $modelPermissions;
     }
 
     /**
