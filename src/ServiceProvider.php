@@ -28,6 +28,10 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__.'/../migrations' => database_path('migrations'),
         ], 'migrations');
 
+        $this->publishes([
+            __DIR__.'/../lang' => resource_path('lang'),
+        ], 'translations');
+
         $this->registerBladeDirectives();
     }
 

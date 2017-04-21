@@ -18,6 +18,9 @@ class RoleDeniedException extends AccessDenied
      */
     public function __construct(string $role)
     {
-        $this->message = "You don't have a required role '{$role}'";
+        $this->message = trans(
+            'single-role::single-role.exceptions.role',
+            ['role' => $role]
+        );
     }
 }

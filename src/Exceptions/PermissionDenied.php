@@ -18,6 +18,9 @@ class PermissionDenied extends AccessDenied
      */
     public function __construct(string $permission)
     {
-        $this->message = "You don't have a required permission '{$permission}'";
+        $this->message = trans(
+            'single-role::single-role.exceptions.permission',
+            ['permission' => $permission]
+        );
     }
 }

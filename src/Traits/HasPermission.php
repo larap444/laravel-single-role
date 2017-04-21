@@ -17,6 +17,11 @@ use McMatters\SingleRole\Models\Role;
 trait HasPermission
 {
     /**
+     * @var array
+     */
+    protected static $cachedPermissions = [];
+
+    /**
      * @return BelongsToMany
      */
     public function permissions(): BelongsToMany
@@ -78,13 +83,11 @@ trait HasPermission
      */
     public function getPermissions(): Collection
     {
-        static $permissions = [];
-
         $class = get_class($this);
         $key = $this->getKey();
 
-        if (isset($permissions[$class][$key])) {
-            return $permissions[$class][$key];
+        if (isset(self::$cachedPermissions[$class][$key])) {
+            return self::$cachedPermissions[$class][$key];
         }
 
         if ($this instanceof Role) {
@@ -101,7 +104,7 @@ trait HasPermission
             }
         }
 
-        $permissions[$class][$key] = $modelPermissions;
+        self::$cachedPermissions[$class][$key] = $modelPermissions;
 
         return $modelPermissions;
     }
@@ -119,6 +122,7 @@ trait HasPermission
         bool $touch = true
     ) {
         $this->permissions()->attach($id, $attributes, $touch);
+        $this->updateCachedPermissions();
 
         return $this;
     }
@@ -132,6 +136,7 @@ trait HasPermission
     public function detachPermissions($ids = null, bool $touch = true)
     {
         $this->permissions()->detach($ids, $touch);
+        $this->updateCachedPermissions();
 
         return $this;
     }
@@ -145,7 +150,18 @@ trait HasPermission
     public function syncPermissions($ids, bool $detaching = true)
     {
         $this->permissions()->sync($ids, $detaching);
+        $this->updateCachedPermissions();
 
         return $this;
+    }
+
+    /**
+     * @return void
+     */
+    protected function updateCachedPermissions()
+    {
+        self::$cachedPermissions[get_class($this)][$this->getKey()] = $this
+            ->permissions()
+            ->get();
     }
 }
