@@ -7,7 +7,10 @@ namespace McMatters\SingleRole\Traits;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Models\Role;
+use const false, null, true;
+use function array_merge, explode, is_array, is_numeric, is_string, strpos;
 
 /**
  * Class HasRole
@@ -23,8 +26,17 @@ trait HasRole
      */
     public function __construct(array $attributes = [])
     {
-        $this->fillable[] = 'role_id';
+        $this->fillable(array_merge($this->getFillable() + ['role_id']));
+
         parent::__construct($attributes);
+    }
+
+    /**
+     * @return array
+     */
+    public function getCasts(): array
+    {
+        return array_merge(parent::getCasts(), ['role_id' => 'int']);
     }
 
     /**
@@ -36,52 +48,66 @@ trait HasRole
     }
 
     /**
-     * @param $role
+     * @param mixed $role
      *
      * @return bool
      */
     public function hasRole($role): bool
     {
         $currentRole = $this->attributes['role_id'];
+        $delimiter = Config::get('single-role.delimiter');
 
         if (!is_numeric($role) && is_string($role)) {
-            $role = Role::where('name', '=', $role)->first();
+            if (strpos($delimiter, $role) !== false) {
+                $role = explode($delimiter, $role);
+            } else {
+                $role = Role::query()->where('name', $role)->first();
 
-            if (null === $role) {
-                return false;
+                if (null === $role) {
+                    return false;
+                }
+
+                return $currentRole === $role->getKey();
             }
-
-            return $currentRole === $role->getKey();
         }
 
         if (is_array($role)) {
-            $firstRole = array_first($role);
+            foreach ($role as $item) {
+                if (is_numeric($item) && (int) $item === $currentRole) {
+                    return true;
+                }
 
-            if (is_numeric($firstRole)) {
-                return in_array($currentRole, $role, true);
-            }
-
-            if ($firstRole instanceof Model) {
-                return in_array($currentRole, array_pluck($role, 'id'), true);
+                if ($item instanceof Model && $item->getKey() === $currentRole) {
+                    return true;
+                }
             }
 
             return false;
         }
 
         if ($role instanceof Collection) {
-            return $role->whereStrict('id', $currentRole)->isNotEmpty();
+            return $role->contains(function (Role $role) use ($currentRole) {
+                return $role->getKey() === $currentRole;
+            });
         }
 
         return $currentRole === $role;
     }
 
     /**
-     * @param int $role
+     * @param mixed $role
      *
      * @return $this
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function attachRole(int $role)
+    public function attachRole($role)
     {
+        if (is_string($role) && !is_numeric($role)) {
+            $role = Role::query()->where('name', $role)->firstOrFail()->getKey();
+        } elseif ($role instanceof Model) {
+            $role = $role->getKey();
+        }
+
         $this->update(['role_id' => $role]);
 
         return $this;

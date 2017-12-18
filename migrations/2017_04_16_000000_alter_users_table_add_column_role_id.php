@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -12,11 +13,24 @@ use Illuminate\Support\Facades\Schema;
 class AlterUsersTableAddColumnRoleId extends Migration
 {
     /**
-     * Run the migration.
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * AlterUsersTableAddColumnRoleId constructor.
+     */
+    public function __construct()
+    {
+        $this->table = Config::get('single-role.tables.users');
+    }
+
+    /**
+     * @return void
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table($this->table, function (Blueprint $table) {
             $table->unsignedInteger('role_id')->nullable();
 
             $table->foreign('role_id')
@@ -27,11 +41,11 @@ class AlterUsersTableAddColumnRoleId extends Migration
     }
 
     /**
-     * Reverse the migration.
+     * @return void
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table($this->table, function (Blueprint $table) {
             $table->dropForeign('users_role_id_foreign');
             $table->dropColumn('role_id');
         });

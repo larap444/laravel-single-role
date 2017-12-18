@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -12,21 +13,34 @@ use Illuminate\Support\Facades\Schema;
 class CreatePermissionsTable extends Migration
 {
     /**
-     * Run the migration.
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * CreatePermissionsTable constructor.
+     */
+    public function __construct()
+    {
+        $this->table = Config::get('single-role.tables.permissions');
+    }
+
+    /**
+     * @return void
      */
     public function up()
     {
-        Schema::create('permissions', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->unique();
         });
     }
 
     /**
-     * Reverse the migration.
+     * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('permissions');
+        Schema::dropIfExists($this->table);
     }
 }

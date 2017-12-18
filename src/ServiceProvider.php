@@ -21,15 +21,15 @@ class ServiceProvider extends BaseServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../config/single-role.php' => config_path('single-role.php'),
+            __DIR__.'/../config/single-role.php' => $this->app->configPath('single-role.php'),
         ], 'config');
 
         $this->publishes([
-            __DIR__.'/../migrations' => database_path('migrations'),
+            __DIR__.'/../migrations' => $this->app->databasePath('migrations'),
         ], 'migrations');
 
         $this->publishes([
-            __DIR__.'/../lang' => resource_path('lang'),
+            __DIR__.'/../lang' => $this->app->resourcePath('lang'),
         ], 'translations');
 
         $this->registerBladeDirectives();
@@ -48,22 +48,12 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function registerBladeDirectives()
     {
-        $auth = Auth::class;
-
-        Blade::directive('role', function ($expression) use ($auth) {
-            return "<?php if ({$auth}::check() && {$auth}::user()->hasRole({$expression})): ?>";
+        Blade::if('role', function ($role) {
+            return Auth::check() && Auth::user()->hasRole($role);
         });
 
-        Blade::directive('endrole', function () {
-            return '<?php endif; ?>';
-        });
-
-        Blade::directive('permission', function ($expression) use ($auth) {
-            return "<?php if ({$auth}::check() && {$auth}::user()->hasPermissions({$expression})): ?>";
-        });
-
-        Blade::directive('endpermission', function () {
-            return '<?php endif; ?>';
+        Blade::if('permission', function ($permission) {
+            return Auth::check() && Auth::user()->hasPermissions($permission);
         });
     }
 }

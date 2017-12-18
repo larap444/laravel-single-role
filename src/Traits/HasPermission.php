@@ -6,8 +6,11 @@ namespace McMatters\SingleRole\Traits;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Models\Permission;
 use McMatters\SingleRole\Models\Role;
+use const false, null, true;
+use function explode, get_class, is_numeric, is_string;
 
 /**
  * Class HasPermission
@@ -31,6 +34,8 @@ trait HasPermission
             null,
             null,
             'permission_id',
+            null,
+            null,
             'permissions'
         );
     }
@@ -52,7 +57,7 @@ trait HasPermission
     }
 
     /**
-     * @param $permissions
+     * @param mixed $permissions
      * @param bool $all
      *
      * @return bool
@@ -60,10 +65,10 @@ trait HasPermission
     public function hasPermissions($permissions, $all = false): bool
     {
         if (is_string($permissions)) {
-            $permissions = explode('|', $permissions);
+            $permissions = explode(Config::get('single-role.delimiter'), $permissions);
         }
 
-        foreach ($permissions as $permission) {
+        foreach ((array) $permissions as $permission) {
             $hasPermission = $this->hasPermission($permission);
 
             if ($hasPermission && !$all) {
@@ -128,7 +133,7 @@ trait HasPermission
     }
 
     /**
-     * @param null $ids
+     * @param mixed $ids
      * @param bool $touch
      *
      * @return $this
@@ -142,7 +147,7 @@ trait HasPermission
     }
 
     /**
-     * @param Collection|array $ids
+     * @param mixed $ids
      * @param bool $detaching
      *
      * @return $this

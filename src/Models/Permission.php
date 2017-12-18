@@ -6,6 +6,7 @@ namespace McMatters\SingleRole\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Config;
 
 /**
  * Class Permission
@@ -30,6 +31,18 @@ class Permission extends Model
     protected $fillable = ['name'];
 
     /**
+     * Permission constructor.
+     *
+     * @param array $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        $this->setTable(Config::get('single-role.tables.permissions'));
+
+        parent::__construct($attributes);
+    }
+
+    /**
      * @return BelongsToMany
      */
     public function roles(): BelongsToMany
@@ -49,7 +62,7 @@ class Permission extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(
-            config('single-role.models.user'),
+            Config::get('single-role.models.user'),
             'permission_user',
             'user_id',
             'permission_id',
