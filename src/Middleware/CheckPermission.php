@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use McMatters\SingleRole\Exceptions\PermissionDenied;
+use const null;
 
 /**
  * Class CheckPermission
@@ -27,7 +28,7 @@ class CheckPermission
     {
         $user = $request->user();
 
-        if ($user->check() && $user->hasPermissions($permission)) {
+        if (null !== $user && $user->hasPermissions($permission)) {
             return $next($request);
         }
 

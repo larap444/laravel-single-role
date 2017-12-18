@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use McMatters\SingleRole\Exceptions\RoleDeniedException;
+use const null;
 
 /**
  * Class CheckRole
@@ -27,7 +28,7 @@ class CheckRole
     {
         $user = $request->user();
 
-        if ($user->check() && $user->hasRole($role)) {
+        if (null !== $user && $user->hasRole($role)) {
             return $next($request);
         }
 
