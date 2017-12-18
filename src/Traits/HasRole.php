@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace McMatters\SingleRole\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
@@ -45,6 +46,17 @@ trait HasRole
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'id', 'role');
+    }
+
+    /**
+     * @param Builder $builder
+     * @param mixed $role
+     *
+     * @return Builder
+     */
+    public function scopeRole(Builder $builder, $role): Builder
+    {
+        return $builder->where('role_id', $role);
     }
 
     /**
@@ -102,13 +114,7 @@ trait HasRole
      */
     public function attachRole($role)
     {
-        if (is_string($role) && !is_numeric($role)) {
-            $role = Role::query()->where('name', $role)->firstOrFail()->getKey();
-        } elseif ($role instanceof Model) {
-            $role = $role->getKey();
-        }
-
-        $this->update(['role_id' => $role]);
+        $this->update(['role_id' => $this->parseRole($role)]);
 
         return $this;
     }
@@ -121,5 +127,26 @@ trait HasRole
         $this->update(['role_id' => null]);
 
         return $this;
+    }
+
+    /**
+     * @param mixed $role
+     *
+     * @return int|null
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    protected function parseRole($role)
+    {
+        if (null === $role) {
+            return null;
+        }
+
+        if (is_string($role) && !is_numeric($role)) {
+            $role = Role::query()->where('name', $role)->firstOrFail()->getKey();
+        } elseif ($role instanceof Model) {
+            $role = $role->getKey();
+        }
+
+        return (int) $role;
     }
 }
