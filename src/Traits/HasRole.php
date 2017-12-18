@@ -21,15 +21,11 @@ use function array_merge, explode, is_array, is_numeric, is_string, strpos;
 trait HasRole
 {
     /**
-     * HasRole constructor.
-     *
-     * @param array $attributes
+     * @return array
      */
-    public function __construct(array $attributes = [])
+    public function getFillable(): array
     {
-        $this->fillable(array_merge($this->getFillable() + ['role_id']));
-
-        parent::__construct($attributes);
+        return array_merge(parent::getFillable(), ['role_id']);
     }
 
     /**
