@@ -49,10 +49,11 @@ trait HasRole
      * @param mixed $role
      *
      * @return Builder
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
     public function scopeRole(Builder $builder, $role): Builder
     {
-        return $builder->where('role_id', $role);
+        return $builder->whereIn('role_id', $this->parseRoles($role));
     }
 
     /**
@@ -148,5 +149,38 @@ trait HasRole
         }
 
         return (int) $role;
+    }
+
+    /**
+     * @param $roles
+     *
+     * @return array
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    protected function parseRoles($roles): array
+    {
+        if (!is_array($roles)) {
+            return [$this->parseRole($roles)];
+        }
+
+        $roleIds = [];
+        $roleNames = [];
+
+        foreach ($roles as $role) {
+            if (is_numeric($role)) {
+                $roleIds[] = (int) $role;
+            } elseif (is_string($role)) {
+                $roleNames[] = $role;
+            }
+        }
+
+        if (!empty($roleNames)) {
+            $roleIds = array_merge(
+                $roleIds,
+                Role::query()->whereIn('name', $roleNames)->pluck('id')->all()
+            );
+        }
+
+        return $roleIds;
     }
 }
