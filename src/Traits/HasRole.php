@@ -66,7 +66,7 @@ trait HasRole
         $delimiter = Config::get('single-role.delimiter');
 
         if (!is_numeric($role) && is_string($role)) {
-            if (strpos($delimiter, $role) !== false) {
+            if (strpos($role, $delimiter) !== false) {
                 $role = explode($delimiter, $role);
             } else {
                 $role = Role::query()->where('name', $role)->first();
