@@ -85,6 +85,10 @@ trait HasRole
                     return true;
                 }
 
+                if (is_string($item)) {
+                    $item = Role::query()->where('name', $item)->first();
+                }
+
                 if ($item instanceof Model && $item->getKey() === $currentRole) {
                     return true;
                 }
