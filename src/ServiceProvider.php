@@ -32,6 +32,8 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__.'/../lang' => $this->app->resourcePath('lang'),
         ], 'translations');
 
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'single-role');
+
         $this->registerBladeDirectives();
     }
 

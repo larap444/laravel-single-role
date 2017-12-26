@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace McMatters\SingleRole\Exceptions;
 
+use Illuminate\Support\Facades\Lang;
+
 /**
  * Class RoleDeniedException
  *
@@ -18,9 +20,9 @@ class RoleDeniedException extends AccessDenied
      */
     public function __construct(string $role)
     {
-        $this->message = trans(
+        parent::__construct(Lang::trans(
             'single-role::single-role.exceptions.role',
             ['role' => $role]
-        );
+        ));
     }
 }

@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Traits\HasPermission;
+use const false;
 
 /**
  * Class Role

@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Config;
+use const false;
 
 /**
  * Class Permission

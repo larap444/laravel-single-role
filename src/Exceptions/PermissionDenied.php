@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace McMatters\SingleRole\Exceptions;
 
+use Illuminate\Support\Facades\Lang;
+
 /**
  * Class PermissionDenied
  *
@@ -18,9 +20,9 @@ class PermissionDenied extends AccessDenied
      */
     public function __construct(string $permission)
     {
-        $this->message = trans(
+        parent::__construct(Lang::trans(
             'single-role::single-role.exceptions.permission',
             ['permission' => $permission]
-        );
+        ));
     }
 }
