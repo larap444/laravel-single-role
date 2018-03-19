@@ -21,6 +21,11 @@ use function array_merge, explode, is_array, is_numeric, is_string, strpos;
 trait HasRole
 {
     /**
+     * @var array
+     */
+    protected static $cachedRoles = [];
+
+    /**
      * @return array
      */
     public function getFillable(): array
@@ -64,19 +69,27 @@ trait HasRole
     public function hasRole($role): bool
     {
         $currentRole = $this->attributes['role_id'];
+
+        if (isset(self::$cachedRoles[$role])) {
+            return self::$cachedRoles[$role]->getKey() === $currentRole;
+        }
+
         $delimiter = Config::get('single-role.delimiter');
 
         if (!is_numeric($role) && is_string($role)) {
             if (strpos($role, $delimiter) !== false) {
                 $role = explode($delimiter, $role);
             } else {
-                $role = Role::query()->where('name', $role)->first();
+                /** @var Role $roleModel */
+                $roleModel = Role::query()->where('name', $role)->first();
 
                 if (null === $role) {
                     return false;
                 }
 
-                return $currentRole === $role->getKey();
+                self::$cachedRoles[$role] = $roleModel;
+
+                return $currentRole === $roleModel->getKey();
             }
         }
 
@@ -87,7 +100,13 @@ trait HasRole
                 }
 
                 if (is_string($item)) {
-                    $item = Role::query()->where('name', $item)->first();
+                    if (isset(self::$cachedRoles[$item])) {
+                        $item = self::$cachedRoles[$item];
+                    } else {
+                        $item = self::$cachedRoles[$item] = Role::query()
+                            ->where('name', $item)
+                            ->first();
+                    }
                 }
 
                 if ($item instanceof Model && $item->getKey() === $currentRole) {
@@ -143,7 +162,15 @@ trait HasRole
         }
 
         if (is_string($role) && !is_numeric($role)) {
-            $role = Role::query()->where('name', $role)->firstOrFail()->getKey();
+            if (isset(self::$cachedRoles[$role])) {
+                return self::$cachedRoles[$role]->getKey();
+            }
+
+            self::$cachedRoles[$role] = Role::query()
+                ->where('name', $role)
+                ->firstOrFail();
+
+            $role = self::$cachedRoles[$role]->getKey();
         } elseif ($role instanceof Model) {
             $role = $role->getKey();
         }
