@@ -69,14 +69,13 @@ trait HasRole
     public function hasRole($role): bool
     {
         $currentRole = $this->attributes['role_id'];
-
-        if (isset(self::$cachedRoles[$role])) {
-            return self::$cachedRoles[$role]->getKey() === $currentRole;
-        }
-
         $delimiter = Config::get('single-role.delimiter');
 
         if (!is_numeric($role) && is_string($role)) {
+            if (isset(self::$cachedRoles[$role])) {
+                return self::$cachedRoles[$role]->getKey() === $currentRole;
+            }
+
             if (strpos($role, $delimiter) !== false) {
                 $role = explode($delimiter, $role);
             } else {
