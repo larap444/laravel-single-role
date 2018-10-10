@@ -16,9 +16,9 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 class ServiceProvider extends BaseServiceProvider
 {
     /**
-     * Boot provider.
+     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/single-role.php' => $this->app->configPath('single-role.php'),
@@ -38,9 +38,9 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Register application services.
+     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/single-role.php', 'single-role');
     }
@@ -48,13 +48,13 @@ class ServiceProvider extends BaseServiceProvider
     /**
      * @return void
      */
-    protected function registerBladeDirectives()
+    protected function registerBladeDirectives(): void
     {
-        Blade::if('role', function ($role) {
+        Blade::if('role', function (string $role) {
             return Auth::check() && Auth::user()->hasRole($role);
         });
 
-        Blade::if('permission', function ($permission) {
+        Blade::if('permission', function (string $permission) {
             return Auth::check() && Auth::user()->hasPermissions($permission);
         });
     }

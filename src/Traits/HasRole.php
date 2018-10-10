@@ -4,9 +4,7 @@ declare(strict_types = 1);
 
 namespace McMatters\SingleRole\Traits;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Models\Role;
@@ -24,22 +22,6 @@ trait HasRole
      * @var array
      */
     protected static $cachedRoles = [];
-
-    /**
-     * @return array
-     */
-    public function getFillable(): array
-    {
-        return array_merge(parent::getFillable(), ['role_id']);
-    }
-
-    /**
-     * @return array
-     */
-    public function getCasts(): array
-    {
-        return array_merge(parent::getCasts(), ['role_id' => 'int']);
-    }
 
     /**
      * @return BelongsTo
@@ -82,7 +64,7 @@ trait HasRole
                 /** @var Role $roleModel */
                 $roleModel = Role::query()->where('name', $role)->first();
 
-                if (null === $role) {
+                if (null === $roleModel) {
                     return false;
                 }
 
@@ -94,7 +76,7 @@ trait HasRole
 
         if (is_array($role)) {
             foreach ($role as $item) {
-                if (is_numeric($item) && (int) $item === $currentRole) {
+                if (is_numeric($item) && ((int) $item) === $currentRole) {
                     return true;
                 }
 
@@ -128,22 +110,23 @@ trait HasRole
     /**
      * @param mixed $role
      *
-     * @return $this
+     * @return self
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function attachRole($role)
+    public function attachRole($role): self
     {
-        $this->update(['role_id' => $this->parseRole($role)]);
+        $this->forceFill(['role_id' => $this->parseRole($role)])->save();
 
         return $this;
     }
 
     /**
-     * @return $this
+     * @return self
      */
-    public function detachRole()
+    public function detachRole(): self
     {
-        $this->update(['role_id' => null]);
+        $this->forceFill(['role_id' => null])->save();
 
         return $this;
     }
@@ -152,9 +135,10 @@ trait HasRole
      * @param mixed $role
      *
      * @return int|null
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    protected function parseRole($role)
+    protected function parseRole($role): ?int
     {
         if (null === $role) {
             return null;
@@ -169,18 +153,21 @@ trait HasRole
                 ->where('name', $role)
                 ->firstOrFail();
 
-            $role = self::$cachedRoles[$role]->getKey();
-        } elseif ($role instanceof Model) {
-            $role = $role->getKey();
+            return self::$cachedRoles[$role]->getKey();
         }
 
-        return (int) $role;
+        if ($role instanceof Model) {
+            return $role->getKey();
+        }
+
+        return null;
     }
 
     /**
-     * @param $roles
+     * @param mixed $roles
      *
      * @return array
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
     protected function parseRoles($roles): array
@@ -201,10 +188,15 @@ trait HasRole
         }
 
         if (!empty($roleNames)) {
-            $roleIds = array_merge(
-                $roleIds,
-                Role::query()->whereIn('name', $roleNames)->pluck('id')->all()
-            );
+            $rolesCollection = Role::query()->whereIn('name', $roleNames)->get();
+
+            /** @var Role $role */
+            foreach ($rolesCollection as $role) {
+                // Add roles to static cache.
+                self::$cachedRoles[$role->getAttribute('name')] = $role;
+            }
+
+            $roleIds = array_merge($roleIds, $rolesCollection->modelKeys());
         }
 
         return $roleIds;

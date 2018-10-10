@@ -22,11 +22,6 @@ class Permission extends Model
     public $timestamps = false;
 
     /**
-     * @var string
-     */
-    protected $table = 'permissions';
-
-    /**
      * @var array
      */
     protected $fillable = ['name'];
@@ -50,7 +45,7 @@ class Permission extends Model
     {
         return $this->belongsToMany(
             Role::class,
-            'permission_role',
+            Config::get('single-role.tables.permission_role'),
             'role_id',
             'permission_id',
             'roles'
@@ -64,7 +59,7 @@ class Permission extends Model
     {
         return $this->belongsToMany(
             Config::get('single-role.models.user'),
-            'permission_user',
+            Config::get('single-role.tables.permission_user'),
             'user_id',
             'permission_id',
             'users'

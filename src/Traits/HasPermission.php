@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Models\Permission;
 use McMatters\SingleRole\Models\Role;
 use const false, null, true;
-use function explode, get_class, is_numeric, is_string;
+use function class_uses, explode, get_class, in_array, is_numeric, is_string;
 
 /**
  * Class HasPermission
@@ -49,7 +49,7 @@ trait HasPermission
     {
         $permissions = $this->getPermissions();
 
-        return (bool) $permissions->first(function ($item) use ($permission) {
+        return (bool) $permissions->first(function (Permission $item) use ($permission) {
             return is_numeric($permission)
                 ? $item->getKey() === (int) $permission
                 : $item->getAttribute('name') === $permission;
@@ -95,9 +95,7 @@ trait HasPermission
             return self::$cachedPermissions[$class][$key];
         }
 
-        if ($this instanceof Role) {
-            $modelPermissions = $this->getAttribute('permissions');
-        } else {
+        if (in_array(HasRole::class, class_uses($class), true)) {
             /** @var null|Role $role */
             $role = $this->getAttribute('role');
             $modelPermissions = $this->getAttribute('permissions');
@@ -107,6 +105,8 @@ trait HasPermission
                     $role->getAttribute('permissions')
                 );
             }
+        } else {
+            $modelPermissions = $this->getAttribute('permissions');
         }
 
         self::$cachedPermissions[$class][$key] = $modelPermissions;
@@ -119,13 +119,13 @@ trait HasPermission
      * @param array $attributes
      * @param bool $touch
      *
-     * @return $this
+     * @return self
      */
     public function attachPermissions(
         $id,
         array $attributes = [],
         bool $touch = true
-    ) {
+    ): self {
         $this->permissions()->attach($id, $attributes, $touch);
         $this->updateCachedPermissions();
 
@@ -136,9 +136,9 @@ trait HasPermission
      * @param mixed $ids
      * @param bool $touch
      *
-     * @return $this
+     * @return self
      */
-    public function detachPermissions($ids = null, bool $touch = true)
+    public function detachPermissions($ids = null, bool $touch = true): self
     {
         $this->permissions()->detach($ids, $touch);
         $this->updateCachedPermissions();
@@ -152,7 +152,7 @@ trait HasPermission
      *
      * @return $this
      */
-    public function syncPermissions($ids, bool $detaching = true)
+    public function syncPermissions($ids, bool $detaching = true): self
     {
         $this->permissions()->sync($ids, $detaching);
         $this->updateCachedPermissions();
@@ -163,7 +163,7 @@ trait HasPermission
     /**
      * @return void
      */
-    protected function updateCachedPermissions()
+    protected function updateCachedPermissions(): self
     {
         self::$cachedPermissions[get_class($this)][$this->getKey()] = $this
             ->permissions()
