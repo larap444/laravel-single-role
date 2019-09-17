@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use McMatters\SingleRole\Exceptions\PermissionDenied;
+
 use const null;
 
 /**
@@ -17,12 +18,13 @@ use const null;
 class CheckPermission
 {
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @param string $permission
      *
      * @return mixed
-     * @throws PermissionDenied
+     *
+     * @throws \McMatters\SingleRole\Exceptions\PermissionDenied
      */
     public function handle(Request $request, Closure $next, string $permission)
     {

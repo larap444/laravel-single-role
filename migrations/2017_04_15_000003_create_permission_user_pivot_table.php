@@ -28,11 +28,11 @@ class CreatePermissionUserPivotTable extends Migration
     /**
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
-            $table->unsignedInteger('permission_id')->index();
-            $table->unsignedInteger('user_id')->index();
+            $table->unsignedBigInteger('permission_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
 
             $table->foreign('permission_id')
                 ->references('id')
@@ -49,7 +49,7 @@ class CreatePermissionUserPivotTable extends Migration
     /**
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists($this->table);
     }

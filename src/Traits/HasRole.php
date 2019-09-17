@@ -10,8 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use McMatters\SingleRole\Models\Role;
-use const false, null, true;
+
 use function array_merge, explode, is_array, is_numeric, is_string, strpos;
+
+use const false, null, true;
 
 /**
  * Class HasRole
@@ -42,23 +44,29 @@ trait HasRole
     }
 
     /**
-     * @return BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function role(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'role_id', 'id', 'role');
+        return $this->belongsTo(
+            Role::class,
+            'role_id',
+            $this->primaryKey,
+            __FUNCTION__
+        );
     }
 
     /**
-     * @param Builder $builder
+     * @param \Illuminate\Database\Eloquent\Builder $builder
      * @param mixed $role
      *
-     * @return Builder
+     * @return \Illuminate\Database\Eloquent\Builder
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
     public function scopeRole(Builder $builder, $role): Builder
     {
-        return $builder->whereIn('role_id', $this->parseRoles($role));
+        return $builder->whereIn("{$this->table}.role_id", $this->parseRoles($role));
     }
 
     /**
@@ -68,7 +76,7 @@ trait HasRole
      */
     public function hasRole($role): bool
     {
-        $currentRole = $this->attributes['role_id'];
+        $currentRole = $this->getAttribute('role_id');
         $delimiter = Config::get('single-role.delimiter');
 
         if (!is_numeric($role) && is_string($role)) {
@@ -79,7 +87,7 @@ trait HasRole
             if (strpos($role, $delimiter) !== false) {
                 $role = explode($delimiter, $role);
             } else {
-                /** @var Role $roleModel */
+                /** @var \McMatters\SingleRole\Models\Role $roleModel */
                 $roleModel = Role::query()->where('name', $role)->first();
 
                 if (null === $role) {
@@ -99,13 +107,9 @@ trait HasRole
                 }
 
                 if (is_string($item)) {
-                    if (isset(self::$cachedRoles[$item])) {
-                        $item = self::$cachedRoles[$item];
-                    } else {
-                        $item = self::$cachedRoles[$item] = Role::query()
+                    $item = self::$cachedRoles[$item] ?? Role::query()
                             ->where('name', $item)
                             ->first();
-                    }
                 }
 
                 if ($item instanceof Model && $item->getKey() === $currentRole) {
@@ -117,7 +121,7 @@ trait HasRole
         }
 
         if ($role instanceof Collection) {
-            return $role->contains(function (Role $role) use ($currentRole) {
+            return $role->contains(static function (Role $role) use ($currentRole) {
                 return $role->getKey() === $currentRole;
             });
         }
@@ -128,10 +132,11 @@ trait HasRole
     /**
      * @param mixed $role
      *
-     * @return $this
+     * @return self
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function attachRole($role)
+    public function attachRole($role): self
     {
         $this->update(['role_id' => $this->parseRole($role)]);
 
@@ -139,9 +144,9 @@ trait HasRole
     }
 
     /**
-     * @return $this
+     * @return self
      */
-    public function detachRole()
+    public function detachRole(): self
     {
         $this->update(['role_id' => null]);
 
@@ -152,9 +157,10 @@ trait HasRole
      * @param mixed $role
      *
      * @return int|null
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    protected function parseRole($role)
+    protected function parseRole($role): ?int
     {
         if (null === $role) {
             return null;
@@ -178,9 +184,10 @@ trait HasRole
     }
 
     /**
-     * @param $roles
+     * @param mixed $roles
      *
      * @return array
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
     protected function parseRoles($roles): array

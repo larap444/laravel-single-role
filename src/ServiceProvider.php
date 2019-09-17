@@ -16,39 +16,40 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 class ServiceProvider extends BaseServiceProvider
 {
     /**
-     * Boot provider.
+     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->publishes([
-            __DIR__.'/../config/single-role.php' => $this->app->configPath('single-role.php'),
-        ], 'config');
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/single-role.php' => $this->app->configPath('single-role.php'),
+            ], 'config');
 
-        $this->publishes([
-            __DIR__.'/../migrations' => $this->app->databasePath('migrations'),
-        ], 'migrations');
+            $this->publishes([
+                __DIR__.'/../migrations' => $this->app->databasePath('migrations'),
+            ], 'migrations');
 
-        $this->publishes([
-            __DIR__.'/../lang' => $this->app->resourcePath('lang'),
-        ], 'translations');
+            $this->publishes([
+                __DIR__.'/../lang' => $this->app->resourcePath('lang'),
+            ], 'translations');
+        }
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'single-role');
-
-        $this->registerBladeDirectives();
-    }
-
-    /**
-     * Register application services.
-     */
-    public function register()
-    {
         $this->mergeConfigFrom(__DIR__.'/../config/single-role.php', 'single-role');
     }
 
     /**
      * @return void
      */
-    protected function registerBladeDirectives()
+    public function register(): void
+    {
+        $this->registerBladeDirectives();
+    }
+
+    /**
+     * @return void
+     */
+    protected function registerBladeDirectives(): void
     {
         Blade::if('role', function ($role) {
             return Auth::check() && Auth::user()->hasRole($role);

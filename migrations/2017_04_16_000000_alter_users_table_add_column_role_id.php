@@ -28,10 +28,10 @@ class AlterUsersTableAddColumnRoleId extends Migration
     /**
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table($this->table, function (Blueprint $table) {
-            $table->unsignedInteger('role_id')->nullable();
+            $table->unsignedBigInteger('role_id')->nullable();
 
             $table->foreign('role_id')
                 ->references('id')
@@ -43,7 +43,7 @@ class AlterUsersTableAddColumnRoleId extends Migration
     /**
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table($this->table, function (Blueprint $table) {
             $table->dropForeign('users_role_id_foreign');

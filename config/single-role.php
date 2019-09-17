@@ -8,9 +8,9 @@ return [
     ],
 
     'tables' => [
-        'users'           => 'users',
-        'roles'           => 'roles',
-        'permissions'     => 'permissions',
+        'users' => 'users',
+        'roles' => 'roles',
+        'permissions' => 'permissions',
 
         // Pivot tables.
         'permission_role' => 'permission_role',

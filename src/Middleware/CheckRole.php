@@ -7,6 +7,7 @@ namespace McMatters\SingleRole\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use McMatters\SingleRole\Exceptions\RoleDeniedException;
+
 use const null;
 
 /**
@@ -17,12 +18,13 @@ use const null;
 class CheckRole
 {
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @param string $role
      *
      * @return mixed
-     * @throws RoleDeniedException
+     *
+     * @throws \McMatters\SingleRole\Exceptions\RoleDeniedException
      */
     public function handle(Request $request, Closure $next, string $role)
     {
