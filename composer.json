@@ -10,7 +10,7 @@
     "require": {
         "php": ">=7.1",
         "illuminate/database": "^5.8 || ^6.0",
-        "illuminate/http": "^5.8 || ^6.0"
+        "illuminate/http": "^5.8 || ^6.5"
     },
     "autoload": {
         "psr-4": {
